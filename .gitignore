@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/DemoProviderMerge.Main/bin/Debug/net7.0
+/DemoProviderMerge.Main/obj
+/TestTask/bin/Debug/net7.0
+/TestTask/obj

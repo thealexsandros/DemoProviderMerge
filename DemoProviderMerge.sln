@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoProviderMerge.Main", "DemoProviderMerge.Main\DemoProviderMerge.Main.csproj", "{412B1E3D-309E-4D18-906C-29713F073823}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestTask", "TestTask\TestTask.csproj", "{CC88F4A4-20A3-439B-9B22-FA19E5900E50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{412B1E3D-309E-4D18-906C-29713F073823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{412B1E3D-309E-4D18-906C-29713F073823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{412B1E3D-309E-4D18-906C-29713F073823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{412B1E3D-309E-4D18-906C-29713F073823}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC88F4A4-20A3-439B-9B22-FA19E5900E50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC88F4A4-20A3-439B-9B22-FA19E5900E50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC88F4A4-20A3-439B-9B22-FA19E5900E50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC88F4A4-20A3-439B-9B22-FA19E5900E50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {203B577A-7789-4358-8FD8-106EB74DA271}
+	EndGlobalSection
+EndGlobal
