@@ -22,7 +22,7 @@ public partial class RouteCache
     private void ExecuteCore()
     {
         IReadOnlyCollection<Route> keysToRemove = _routeByDataIndex.Keys
-            .Where(x => x.TimeLimit >= DateTime.Now)
+            .Where(x => x.TimeLimit < DateTime.Now)
             .ToArray();
 
         foreach (Route route in keysToRemove)
