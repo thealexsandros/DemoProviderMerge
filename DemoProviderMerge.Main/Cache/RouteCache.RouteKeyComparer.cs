@@ -4,12 +4,6 @@ public partial class RouteCache
 {
     private class RouteKeyComparer : IEqualityComparer<RouteKey?>
     {
-        static public IEqualityComparer<RouteKey?> Instance { get; } = new RouteKeyComparer();
-
-        private RouteKeyComparer()
-        {
-        }
-
         public bool Equals(RouteKey? x, RouteKey? y)
         {
             if (ReferenceEquals(x, y))

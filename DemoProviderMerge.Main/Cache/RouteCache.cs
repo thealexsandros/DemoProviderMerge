@@ -23,13 +23,16 @@ public partial class RouteCache : BackgroundService, IRouteCache
         public DateTime DepartureDate { get; init; }
     }
 
-    private readonly ConcurrentDictionary<Route, Route> _routeByDataIndex = new (RouteIgnoreIdComparer.Instance);
-
     /// <remarks>
-    /// Assuming that number of routes for RouteKey is in range 1..100.
+    /// Assuming that number of routes for RouteKey is in range 1..100
+    /// (in real-life transportation the number of routes from A to B starting at same date is more or less in the range mentioned above).
+    /// 
+    /// ConcurrentDictionary is used for concurrent indexed access.
+    /// 
+    /// Route as key and value are used to maintain same guid for multiple route addition attempts with GetOrAdd.
     /// </remarks>
     private readonly ConcurrentDictionary<RouteKey, ConcurrentDictionary<Route, Route>> _routeKeyToRoutesIndex =
-        new (RouteKeyComparer.Instance);
+        new (new RouteKeyComparer());
 
     public RouteCache(IOptions<CacheOptions> cacheOptions)
     {
@@ -38,8 +41,6 @@ public partial class RouteCache : BackgroundService, IRouteCache
 
     public Route GetOrAdd(Route route)
     {
-        Route result = _routeByDataIndex.GetOrAdd(route, route);
-
         RouteKey routeKey = new ()
         {
             Origin = route.Origin,
@@ -50,7 +51,7 @@ public partial class RouteCache : BackgroundService, IRouteCache
         ConcurrentDictionary<Route, Route> routes =
             _routeKeyToRoutesIndex.GetOrAdd(routeKey, new ConcurrentDictionary<Route, Route>(RouteIgnoreIdComparer.Instance));
 
-        routes[result] = result;
+        Route result = routes.GetOrAdd(route, route);
 
         return result;
     }
