@@ -38,7 +38,8 @@ public class ProviderTwoClient : IProviderTwoClient
         responseMessage.EnsureSuccessStatusCode();
 
         Stream responseContent = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
-        ProviderTwoSearchResponse response = await JsonSerializer.DeserializeAsync<ProviderTwoSearchResponse>(responseContent);
+        ProviderTwoSearchResponse response =
+            await JsonSerializer.DeserializeAsync<ProviderTwoSearchResponse>(responseContent, cancellationToken: cancellationToken);
 
         return response;
     }

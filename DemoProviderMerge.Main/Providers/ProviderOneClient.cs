@@ -38,7 +38,9 @@ public class ProviderOneClient : IProviderOneClient
         responseMessage.EnsureSuccessStatusCode();
 
         Stream responseContent = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
-        ProviderOneSearchResponse response = await JsonSerializer.DeserializeAsync<ProviderOneSearchResponse>(responseContent);
+
+        ProviderOneSearchResponse response =
+            await JsonSerializer.DeserializeAsync<ProviderOneSearchResponse>(responseContent, cancellationToken: cancellationToken);
 
         return response;
     }
