@@ -1,11 +1,14 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using DemoProviderMerge.Main.Cache;
 using DemoProviderMerge.Main.Providers;
+using DemoProviderMerge.Main.RouteComparers;
 using DemoProviderMerge.Main.Services;
 
 using TestTask;
+
+using Route = TestTask.Route;
 
 namespace DemoProviderMerge.Main;
 
@@ -35,12 +38,14 @@ public class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // Multiple DI for using both as hosted service and interface.
         services.AddSingleton<RouteCache>();
         services.AddSingleton<IRouteCache>(x => x.GetRequiredService<RouteCache>());
         services.AddHostedService<RouteCache>(x => x.GetRequiredService<RouteCache>());
         services.AddHttpClient();
         services.AddSingleton<IProviderOneClient, ProviderOneClient>();
         services.AddSingleton<IProviderTwoClient, ProviderTwoClient>();
+        services.AddSingleton<IEqualityComparer<Route?>, RouteIgnoreIdComparer>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddControllers().AddJsonOptions(options =>
         {
@@ -55,6 +60,8 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
         }
+
+        app.UseStatusCodePages();
 
         app.UseRouting();
 

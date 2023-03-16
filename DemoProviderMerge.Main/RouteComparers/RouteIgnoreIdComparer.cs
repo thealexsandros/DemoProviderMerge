@@ -4,12 +4,6 @@ namespace DemoProviderMerge.Main.RouteComparers;
 
 internal class RouteIgnoreIdComparer : IEqualityComparer<Route?>
 {
-    static public IEqualityComparer<Route?> Instance { get; } = new RouteIgnoreIdComparer();
-
-    private RouteIgnoreIdComparer()
-    {
-    }
-
     public bool Equals(Route? x, Route? y)
     {
         if (ReferenceEquals(x, y))

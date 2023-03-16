@@ -1,9 +1,5 @@
-﻿using System.Text;
-
-using DemoProviderMerge.Main.Cache;
+﻿using DemoProviderMerge.Main.Cache;
 using DemoProviderMerge.Main.Providers;
-using DemoProviderMerge.Main.RouteComparers;
-using DemoProviderMerge.Main.Validation;
 
 using TestTask;
 
@@ -19,47 +15,56 @@ public class SearchService : ISearchService
 
     private readonly IRouteCache _routeCache;
 
+    private readonly IEqualityComparer<Route?> _routeComparer;
+
+    private readonly ILogger _logger;
+
     public SearchService(
         IProviderOneClient providerOneClient,
         IProviderTwoClient providerTwoClient,
-        IRouteCache routeCache)
+        IRouteCache routeCache,
+        IEqualityComparer<Route?> routeComparer,
+        ILogger<SearchService> logger)
     {
         _providerOneClient = providerOneClient;
         _providerTwoClient = providerTwoClient;
         _routeCache = routeCache;
+        _routeComparer = routeComparer;
+        _logger = logger;
     }
 
     public async Task<bool> IsAvailableAsync(CancellationToken token)
     {
+        bool isAvailable = false;
+        try
+        {
 #warning //TODO Assuming service is unavailable if at least one of providers is unavailable.
-        IEnumerable<bool> results = await Task.WhenAll(
-            _providerOneClient.IsAvailableAsync(token),
-            _providerTwoClient.IsAvailableAsync(token)
-        );
+            IEnumerable<bool> results = await Task.WhenAll(
+                _providerOneClient.IsAvailableAsync(token),
+                _providerTwoClient.IsAvailableAsync(token)
+            );
 
-        return results.All(x => x);
+            isAvailable = results.All(x => x);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.ToString());
+
+            return false;
+        }
+
+        return isAvailable;
     }
 
     public async Task<SearchResponse> SearchAsync(SearchRequest request, CancellationToken token)
     {
-        if (await IsAvailableAsync(token))
-        {
-            ValidationResult validationResult = ValidateSearchRequest(request);
-            if (validationResult.IsValid)
-            {
-                Route[] routes = request.Filters?.OnlyCached == true
-                    ? GetRoutesFromCache(request)
-                    : await GetRoutesFromProvidersAsync(request, token);
+        Route[] routes = request.Filters?.OnlyCached == true
+            ? GetRoutesFromCache(request)
+            : await GetRoutesFromProvidersAsync(request, token);
 
-                SearchResponse searchResponse = CreateSearchResponse(routes);
+        SearchResponse searchResponse = CreateSearchResponse(routes);
 
-                return searchResponse;
-            }
-
-            throw new Exception($"Request is invalid: {validationResult.ErrorMessage}");
-        }
-
-        throw new Exception("Search service is unavailable");
+        return searchResponse;
     }
 
     private SearchResponse CreateSearchResponse(Route[] routes)
@@ -89,9 +94,10 @@ public class SearchService : ISearchService
 
         Route[] routes = routesFromProviders
             .SelectMany(x => x)
-            .Distinct(RouteIgnoreIdComparer.Instance)
+            .Distinct(_routeComparer)
             .Select(x => _routeCache.GetOrAdd(x))
 #warning //TODO Maybe > instead of >=.
+#warning //TODO Assuming TimeLimit is in same timezone.
             .Where(x => x.TimeLimit >= DateTime.Now)
             .OrderBy(x => x.Price)
             .ThenByDescending(x => x.DestinationDateTime - x.OriginDateTime)
@@ -184,59 +190,4 @@ public class SearchService : ISearchService
 
     private Route[] GetRoutesFromCache(SearchRequest request) =>
         _routeCache.FindCachedRoutes(request);
-
-    private ValidationResult ValidateSearchRequest(SearchRequest? request)
-    {
-#warning //TODO validation with attributes
-        StringBuilder errorBuilder = new();
-
-        if (request == null)
-        {
-            errorBuilder.AppendLine($"{nameof(SearchRequest)} should be not null.");
-        }
-        else
-        {
-            if (string.IsNullOrWhiteSpace(request.Origin))
-            {
-                errorBuilder.AppendLine($"{nameof(request.Origin)} should not be empty.");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.Destination))
-            {
-                errorBuilder.AppendLine($"{nameof(request.Destination)} should not be empty.");
-            }
-
-#warning //TODO Assuming origin date in parameters is specified without time.
-            request.OriginDateTime.ValidateDate(nameof(request.OriginDateTime), errorBuilder);
-
-            if (request.Filters != null)
-            {
-                ValidateSearchRequestFilters(request.Filters, errorBuilder, nameof(request.Filters));
-            }
-        }
-
-        if (errorBuilder.Length > 0)
-        {
-            return new()
-            {
-                IsValid = false,
-                ErrorMessage = errorBuilder.ToString()
-            };
-        }
-
-        return new() { IsValid = true };
-    }
-
-    private void ValidateSearchRequestFilters(SearchFilters searchFilters, StringBuilder errorBuilder, string propertyNamePrefix)
-    {
-        if (searchFilters.MaxPrice < 0m)
-        {
-            errorBuilder.AppendLine($"{propertyNamePrefix}.{nameof(searchFilters.MaxPrice)} should be greater than or equal to zero.");
-        }
-
-        searchFilters.MinTimeLimit.ValidateNullableDateTime($"{propertyNamePrefix}.{nameof(searchFilters.MinTimeLimit)}", errorBuilder);
-
-#warning //TODO Assuming destination date is specified without time.
-        searchFilters.DestinationDateTime.ValidateNullableDate($"{propertyNamePrefix}.{nameof(searchFilters.DestinationDateTime)}", errorBuilder);
-    }
 }

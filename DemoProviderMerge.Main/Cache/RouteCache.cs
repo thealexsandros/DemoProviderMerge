@@ -49,7 +49,7 @@ public partial class RouteCache : BackgroundService, IRouteCache
         };
 
         ConcurrentDictionary<Route, Route> routes =
-            _routeKeyToRoutesIndex.GetOrAdd(routeKey, new ConcurrentDictionary<Route, Route>(RouteIgnoreIdComparer.Instance));
+            _routeKeyToRoutesIndex.GetOrAdd(routeKey, new ConcurrentDictionary<Route, Route>(new RouteIgnoreIdComparer()));
 
         Route result = routes.GetOrAdd(route, route);
 

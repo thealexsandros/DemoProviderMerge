@@ -14,31 +14,26 @@ public partial class RouteCache
         {
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                ExecuteCore();
+                RemoveExpiredRoutes();
             }
         }
     }
 
-    private void ExecuteCore()
+    private void RemoveExpiredRoutes()
     {
-        IReadOnlyCollection<Route> keysToRemove = _routeByDataIndex.Keys
-            .Where(x => x.TimeLimit < DateTime.Now)
-            .ToArray();
-
-        foreach (Route route in keysToRemove)
+        foreach (RouteKey routeKey in _routeKeyToRoutesIndex.Keys.ToArray())
         {
-            _routeByDataIndex.TryRemove(route, out _);
-
-            RouteKey routeKey = new()
-            {
-                Origin = route.Origin,
-                Destination = route.Destination,
-                DepartureDate = route.OriginDateTime.Date
-            };
-
             if (_routeKeyToRoutesIndex.TryGetValue(routeKey, out ConcurrentDictionary<Route, Route>? routesByKey))
             {
-                routesByKey.TryRemove(route, out _);
+                IReadOnlyCollection<Route> keysToRemove = routesByKey.Keys
+#warning //TODO Assuming TimeLimit is in same timezone.
+                    .Where(x => x.TimeLimit < DateTime.Now)
+                    .ToArray();
+
+                foreach (Route key in keysToRemove)
+                {
+                    routesByKey.TryRemove(key, out _);
+                }
             }
         }
     }

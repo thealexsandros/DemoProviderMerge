@@ -21,7 +21,7 @@ static public class ValidationHelpers
     {
         if (dateTime != null)
         {
-            ((DateTime)dateTime).ValidateDateTime(propertyName, errorBuilder);
+            ((DateTime) dateTime).ValidateDateTime(propertyName, errorBuilder);
         }
     }
 
@@ -39,7 +39,7 @@ static public class ValidationHelpers
     {
         if (date != null)
         {
-            ((DateTime)date).ValidateDate(propertyName, errorBuilder);
+            ((DateTime) date).ValidateDate(propertyName, errorBuilder);
         }
     }
 }
